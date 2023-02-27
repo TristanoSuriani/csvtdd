@@ -6,4 +6,8 @@ public record Cell(String value, ColumnInfo columnInfo) {
         Guards.isNotNull(value);
         Guards.isNotNull(columnInfo);
     }
+
+    public boolean isEmpty() {
+        return value.trim().isEmpty();
+    }
 }
