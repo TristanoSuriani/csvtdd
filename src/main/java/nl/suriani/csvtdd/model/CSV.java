@@ -16,4 +16,8 @@ public record CSV(Header header, Body body) {
                 .map(mapper)
                 .toList();
     }
+
+    public boolean isEmpty() {
+        return body.isEmpty();
+    }
 }

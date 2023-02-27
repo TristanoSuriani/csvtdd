@@ -16,4 +16,16 @@ public record Row(List<Cell> cells) {
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException("Unknown column '" + columnName + "'"));
     }
+
+    public int size() {
+        return cells.size();
+    }
+
+    public boolean isEmpty() {
+        return size() == 0;
+    }
+
+    public Cell get(Integer index) {
+        return cells.get(index);
+    }
 }
