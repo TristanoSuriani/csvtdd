@@ -1,8 +1,5 @@
 @startuml
 
-title CSV Parser - Class Diagram
-
-
 class CSVParser {
   +parse(String text): CSV
 }
