@@ -32,4 +32,9 @@ public record Address(String street, String houseNumber, String houseNumberSuffi
                         new Row(List.of(street1, houseNumber1, houseNumberSuffix1, zipCode1, location1))
                 )));
     }
+
+    static String addressString = """
+            street,houseNumber,houseNumberSuffix,zipCode,location
+            straatlaan,1,,10123,Lelijkstad
+            laanpad,10,A,213AS4,Amsterdaamseveen""";
 }

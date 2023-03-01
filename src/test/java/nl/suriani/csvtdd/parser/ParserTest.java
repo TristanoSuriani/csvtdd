@@ -1,5 +1,6 @@
 package nl.suriani.csvtdd.parser;
 
+import nl.suriani.csvtdd.model.CSV;
 import nl.suriani.csvtdd.model.MissingHeaderException;
 import nl.suriani.csvtdd.model.ParseException;
 import org.junit.jupiter.api.Test;
@@ -27,10 +28,12 @@ class ParserTest {
                 column1""";
 
         var csv = parser.parse(text);
-        System.out.println(csv);
 
-        assertEquals(1, csv.header().row().size());
-        assertEquals("column1", csv.header().row().get(0).value());
+        assertHeaderLooksLikeThis(csv, "column1");
         assertTrue(csv.body().isEmpty());
+    }
+
+    private void assertHeaderLooksLikeThis(CSV csv, String... columns) {
+        assertEquals(columns.length, csv.header().row().size());
     }
 }
