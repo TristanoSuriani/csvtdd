@@ -4,20 +4,50 @@ import nl.suriani.csvtdd.model.*;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
 
 public class Parser {
     public CSV parse(String text) {
-        // this is the minimum amount of code that passes the first test! Good luck from here!
-        var header = new Header(new Row(List.of(new Cell("column1", new ColumnInfo("column1", 0)))));
+        if (text == null) {
+            throw new ParseException("text cannot be null");
+        }
+
+        if (text.trim().isEmpty()) {
+            throw new MissingHeaderException();
+        }
+
+        var lines = splitTextInLines(text);
+        var headerLine = lines.get(0);
+        var header = headerLineToHeader(headerLine);
         var body = new Body(List.of());
         return new CSV(header, body);
     }
 
     private List<String> splitTextInLines(String text) {
-        return Arrays.asList(text.split("\\R"));
+        return splitAndTrim(text, "//R");
     }
 
     private List<String> splitLineInCells(String text) {
-        return Arrays.asList(text.split(","));
+        return splitAndTrim(text, ",");
+    }
+
+    private static List<String> splitAndTrim(String text, String regex) {
+        return Arrays.stream(text.split(regex))
+                .map(String::trim)
+                .toList();
+    }
+
+    private Header headerLineToHeader(String headerLine) {
+        var stringCells = splitLineInCells(headerLine);
+        var cells = headerStringCellsToCells(stringCells);
+        var row = new Row(cells);
+        return new Header(row);
+    }
+
+    private static List<Cell> headerStringCellsToCells(List<String> stringCells) {
+        return Stream.iterate(0, i -> i + 1)
+                .limit(stringCells.size())
+                .map(i -> new Cell(stringCells.get(i), new ColumnInfo(stringCells.get(i), i)))
+                .toList();
     }
 }

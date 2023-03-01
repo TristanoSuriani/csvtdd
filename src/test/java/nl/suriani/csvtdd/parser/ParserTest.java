@@ -12,13 +12,11 @@ class ParserTest {
     @Test
     void nullCsv_boom() {
         assertThrows(ParseException.class, () -> parser.parse(null));
-        // oepsie, this doesn't work... (not implemented yet)
     }
 
     @Test
     void empty_noHeader_boom() {
         assertThrows(MissingHeaderException.class, () -> parser.parse(""));
-        // oepsie, this doesn't work... (not implemented yet)
     }
 
     @Test
@@ -31,6 +29,21 @@ class ParserTest {
 
         assertEquals(1, csv.header().row().size());
         assertEquals("column1", csv.header().row().get(0).value());
+        assertTrue(csv.body().isEmpty());
+    }
+
+    @Test
+    void twoColumnsHeader_emptyBody_ok() {
+        var text = """
+                column1, column2""";
+
+        var csv = parser.parse(text);
+        System.out.println(csv);
+
+        assertEquals(2, csv.header().row().size());
+        assertEquals("column1", csv.header().row().get(0).value());
+        assertEquals("column2", csv.header().row().get(1).value());
+
         assertTrue(csv.body().isEmpty());
     }
 }
