@@ -39,7 +39,7 @@ public class Parser {
         return splitAndTrim(text, ",");
     }
 
-    private static List<String> splitAndTrim(String text, String regex) {
+    private List<String> splitAndTrim(String text, String regex) {
         return Arrays.stream(text.split(regex, -1))
                 .map(String::trim)
                 .toList();
