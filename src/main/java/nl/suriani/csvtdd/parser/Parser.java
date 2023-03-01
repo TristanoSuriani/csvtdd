@@ -18,13 +18,21 @@ public class Parser {
 
         var lines = splitTextInLines(text);
         var headerLine = lines.get(0);
-        var header = headerLineToHeader(headerLine);
-        var body = new Body(List.of());
-        return new CSV(header, body);
+        var bodyLines = lines.stream()
+                .skip(1)
+                .toList();
+
+        try {
+            var header = headerLineToHeader(headerLine);
+            var body = bodyLinesToBody(bodyLines, header);
+            return new CSV(header, body);
+        } catch (MalformedArgumentException malformedArgumentException) {
+            throw  new ParseException(malformedArgumentException.getMessage(), malformedArgumentException);
+        }
     }
 
     private List<String> splitTextInLines(String text) {
-        return splitAndTrim(text, "//R");
+        return splitAndTrim(text, "\n");
     }
 
     private List<String> splitLineInCells(String text) {
@@ -32,22 +40,40 @@ public class Parser {
     }
 
     private static List<String> splitAndTrim(String text, String regex) {
-        return Arrays.stream(text.split(regex))
+        return Arrays.stream(text.split(regex, -1))
                 .map(String::trim)
                 .toList();
     }
 
     private Header headerLineToHeader(String headerLine) {
-        var stringCells = splitLineInCells(headerLine);
-        var cells = headerStringCellsToCells(stringCells);
-        var row = new Row(cells);
+        var row = headerLineToRow(headerLine);
         return new Header(row);
     }
 
-    private static List<Cell> headerStringCellsToCells(List<String> stringCells) {
-        return Stream.iterate(0, i -> i + 1)
+    private Row headerLineToRow(String headerLine) {
+        var stringCells = splitLineInCells(headerLine);
+        var cells = Stream.iterate(0, i -> i + 1)
                 .limit(stringCells.size())
                 .map(i -> new Cell(stringCells.get(i), new ColumnInfo(stringCells.get(i), i)))
                 .toList();
+        return new Row(cells);
+    }
+
+    private Body bodyLinesToBody(List<String> bodyLines, Header header) {
+        var rows = bodyLines.stream()
+                .map(bodyLine -> bodyLineToRow(bodyLine, header))
+                .toList();
+
+        return new Body(rows);
+    }
+
+    private Row bodyLineToRow(String bodyLine, Header header) {
+        var stringCells = splitLineInCells(bodyLine);
+        var cells = Stream.iterate(0, i -> i + 1)
+                .limit(stringCells.size())
+                .map(i -> new Cell(stringCells.get(i), new ColumnInfo(header.row().get(i).value(), i)))
+                .toList();
+
+        return new Row(cells);
     }
 }
