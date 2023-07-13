@@ -4,13 +4,29 @@ import nl.suriani.csvtdd.model.*;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 public class Parser {
     public CSV parse(String text) {
         // this is the minimum amount of code that passes the first test! Good luck from here!
-        var header = new Header(new Row(List.of(new Cell("column1", new ColumnInfo("column1", 0)))));
-        var body = new Body(List.of());
+        if (text == null) {
+            throw new ParseException("null mag niet");
+        }
+        if (text.isEmpty()) {
+            throw new MissingHeaderException();
+        }
+
+        var lines = splitTextInLines(text);
+        var headerLine = lines.get(0);
+        var header = headerLineToHeader(headerLine);
+
+        var bodyLines = lines.stream()
+                .skip(1)
+                .filter(s -> !s.isEmpty())
+                .toList();
+
+        var body = bodyLinesToBody(bodyLines, header);
         return new CSV(header, body);
     }
 
@@ -23,7 +39,7 @@ public class Parser {
     }
 
     private List<String> splitAndTrim(String text, String regex) {
-        return Arrays.stream(text.split(regex))
+        return Arrays.stream(text.split(regex, -1))
                 .map(String::trim)
                 .toList();
     }
@@ -34,11 +50,18 @@ public class Parser {
     }
 
     private Row headerLineToRow(String headerLine) {
-        var stringCells = splitLineInCells(headerLine);
-        var cells = Stream.iterate(0, i -> i + 1)
+        List<String> stringCells = splitLineInCells(headerLine);
+
+        if(stringCells.stream().anyMatch(String::isEmpty)) {
+            throw new InvalidHeaderException();
+        }
+
+        List<Cell> cells = Stream.iterate(0, i -> i + 1)
                 .limit(stringCells.size())
                 .map(i -> new Cell(stringCells.get(i), new ColumnInfo(stringCells.get(i), i)))
                 .toList();
+
+
         return new Row(cells);
     }
 
@@ -57,6 +80,9 @@ public class Parser {
                 .map(i -> new Cell(stringCells.get(i), new ColumnInfo(header.row().get(i).value(), i)))
                 .toList();
 
+        if(cells.size() != header.row().size()) {
+            throw new InvalidNumberOfColumnsException();
+        }
         return new Row(cells);
     }
 }
